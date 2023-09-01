@@ -10,9 +10,14 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+type ClientConectionsEpoll struct {
+	id string
+	conn net.Conn
+}
+
 type epoll struct {
 	fd          int
-	connections map[int]net.Conn
+	connections map[int]ClientConectionsEpoll
 	lock        *sync.RWMutex
 }
 
@@ -21,14 +26,18 @@ func CreateEpoll() (*epoll, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Makes an empty map of client ids mapped to their connections
+	ClientsMapInit()
+
 	return &epoll{
 		fd:          fd,
 		lock:        &sync.RWMutex{},
-		connections: make(map[int]net.Conn),
+		connections: make(map[int]ClientConectionsEpoll),
 	}, nil
 }
 
-func (e *epoll) Add(conn net.Conn) error {
+func (e *epoll) Add(id string, conn net.Conn) error {
 	// Extract file descriptor associated with the connection
 	fd := websocketFD(conn)
 	err := unix.EpollCtl(e.fd, syscall.EPOLL_CTL_ADD, fd, &unix.EpollEvent{Events: unix.POLLIN | unix.POLLHUP, Fd: int32(fd)})
@@ -37,7 +46,11 @@ func (e *epoll) Add(conn net.Conn) error {
 	}
 	e.lock.Lock()
 	defer e.lock.Unlock()
-	e.connections[fd] = conn
+	e.connections[fd] = ClientConectionsEpoll{
+		id: id,
+		conn: conn,
+	}
+	AppendClient(id, conn)
 	
 	loggers.DEBUG(fmt.Sprintf("Append: Total number of connections: %v", len(e.connections)))
 	return nil
@@ -51,12 +64,15 @@ func (e *epoll) Remove(conn net.Conn) error {
 	}
 	e.lock.Lock()
 	defer e.lock.Unlock()
+	id := e.connections[fd].id
 	delete(e.connections, fd)
+	RemoveClient(id)
+
 	loggers.DEBUG(fmt.Sprintf("Remove: Total number of connections: %v", len(e.connections)))
 	return nil
 }
 
-func (e *epoll) Wait() ([]net.Conn, error) {
+func (e *epoll) Wait() ([]ClientConectionsEpoll, error) {
 	events := make([]unix.EpollEvent, 100)
 	n, err := unix.EpollWait(e.fd, events, 100)
 	if err != nil {
@@ -64,10 +80,10 @@ func (e *epoll) Wait() ([]net.Conn, error) {
 	}
 	e.lock.RLock()
 	defer e.lock.RUnlock()
-	var connections []net.Conn
+	var connections []ClientConectionsEpoll
 	for i := 0; i < n; i++ {
-		conn := e.connections[int(events[i].Fd)]
-		connections = append(connections, conn)
+		clientConn := e.connections[int(events[i].Fd)]
+		connections = append(connections, clientConn)
 	}
 	return connections, nil
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
+	"github.com/google/uuid"
 	eventlogger "github.com/pritammukherjee02/multiplexed_socket_server/event_logger"
 )
 
@@ -21,7 +22,11 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	if err := epoller.Add(conn); err != nil {
+
+	// The id will be infered from either the request body or the headers in some way or another
+	id := uuid.NewString()
+
+	if err := epoller.Add(id, conn); err != nil {
 		loggers.ERR("Failed to add connection: " + err.Error())
 		conn.Close()
 	}
@@ -69,20 +74,20 @@ func RunSocketServer(loggers_instance *eventlogger.Loggers) {
 func Start() {
 	loggers.INFO("Starting UNIX Epoll system...")
 	for {
-		connections, err := epoller.Wait()
+		clientConnections, err := epoller.Wait()
 		if err != nil {
 			loggers.ERR("Failed to wait epoll: " + err.Error())
 			continue
 		}
-		for i, conn := range connections {
-			if conn == nil {
+		for i, clientConnection := range clientConnections {
+			if clientConnection.conn == nil {
 				break
 			}
-			if data, _, err := wsutil.ReadClientData(conn); err != nil {
-				if err := epoller.Remove(conn); err != nil {
+			if data, _, err := wsutil.ReadClientData(clientConnection.conn); err != nil {
+				if err := epoller.Remove(clientConnection.conn); err != nil {
 					loggers.ERR("Failed to remove connection: " + err.Error())
 				}
-				conn.Close()
+				clientConnection.conn.Close()
 			} else {
 				loggers.INFO(fmt.Sprintf("%d > data: %s", i, string(data)))
 			}
