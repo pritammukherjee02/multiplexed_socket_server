@@ -25,6 +25,8 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func RunSocketServer() {
+	log.Println("INFO: Starting Gobwas socket server...")
+	log.Println("DEBUG: Setting ulimit RLIMIT_NOFILE to rLimit.Max...")
 	// Increase resources limitations
 	var rLimit syscall.Rlimit
 	if err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rLimit); err != nil {
@@ -34,6 +36,7 @@ func RunSocketServer() {
 	if err := syscall.Setrlimit(syscall.RLIMIT_NOFILE, &rLimit); err != nil {
 		panic(err)
 	}
+	log.Println("DEBUG: Completed ulimit edit")
 
 	// Enable pprof hooks
 	go func() {
@@ -51,13 +54,14 @@ func RunSocketServer() {
 
 	go Start()
 
-	http.HandleFunc("/", wsHandler)
+	http.HandleFunc("/ws", wsHandler)
 	if err := http.ListenAndServe("0.0.0.0:8000", nil); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func Start() {
+	log.Println("INFO: Starting Epoll system...")
 	for {
 		connections, err := epoller.Wait()
 		if err != nil {
