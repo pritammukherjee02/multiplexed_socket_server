@@ -68,7 +68,7 @@ func Start() {
 			log.Printf("Failed to epoll wait %v", err)
 			continue
 		}
-		for _, conn := range connections {
+		for i, conn := range connections {
 			if conn == nil {
 				break
 			}
@@ -78,7 +78,7 @@ func Start() {
 				}
 				conn.Close()
 			} else {
-				log.Printf("data: %s", string(data))
+				log.Printf("%d > data: %s", i, string(data))
 			}
 		}
 	}
