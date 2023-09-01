@@ -44,7 +44,7 @@ func RunSocketServer() {
 
 	// Start epoll
 	var err error
-	epoller, err = MkEpoll()
+	epoller, err = CreateEpoll()
 	if err != nil {
 		panic(err)
 	}
