@@ -1,6 +1,7 @@
 package socket
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -72,7 +73,9 @@ func Start() {
 			if conn == nil {
 				break
 			}
-			if _, _, err := wsutil.ReadClientData(conn); err != nil {
+			if data, _, err := wsutil.ReadClientData(conn); err != nil {
+				// Trying out something
+				fmt.Println("DATA:", string(data))
 				if err := epoller.Remove(conn); err != nil {
 					log.Printf("Failed to remove %v", err)
 				}
