@@ -1,7 +1,6 @@
 package socket
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -74,15 +73,12 @@ func Start() {
 				break
 			}
 			if data, _, err := wsutil.ReadClientData(conn); err != nil {
-				// Trying out something
-				fmt.Println("DATA:", string(data))
 				if err := epoller.Remove(conn); err != nil {
 					log.Printf("Failed to remove %v", err)
 				}
 				conn.Close()
 			} else {
-				// This is commented out since in demo usage, stdout is showing messages sent from > 1M connections at very high rate
-				//log.Printf("msg: %s", string(msg))
+				log.Printf("data: %s", string(data))
 			}
 		}
 	}
