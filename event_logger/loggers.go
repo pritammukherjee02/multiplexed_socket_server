@@ -30,11 +30,11 @@ func (l Loggers) INFO(s string) error {
 
 func (l Loggers) DEBUG(s string) error {
 	if l.verbosity == "debug" {
-		return l.stdout_info_log.Output(2, s)
+		return l.stdout_debug_log.Output(2, s)
 	}
 	return nil
 }
 
 func (l Loggers) ERR(s string) error {
-	return l.stdout_info_log.Output(2, s)
+	return l.stderr_log.Output(2, s)
 }
