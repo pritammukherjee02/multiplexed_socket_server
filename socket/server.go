@@ -54,7 +54,7 @@ func RunSocketServer() {
 
 	go Start()
 
-	http.HandleFunc("/ws", wsHandler)
+	http.HandleFunc("/", wsHandler)
 	if err := http.ListenAndServe("0.0.0.0:8000", nil); err != nil {
 		log.Fatal(err)
 	}
