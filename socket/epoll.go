@@ -1,6 +1,7 @@
 package socket
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"reflect"
@@ -38,6 +39,7 @@ func (e *epoll) Add(conn net.Conn) error {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 	e.connections[fd] = conn
+	fmt.Printf("Connections: %v", e.connections)
 	log.Printf("Total number of connections: %v", len(e.connections))
 	return nil
 }
