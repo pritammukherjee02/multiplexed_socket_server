@@ -24,7 +24,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func main() {
+func RunSocketServer() {
 	// Increase resources limitations
 	var rLimit syscall.Rlimit
 	if err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rLimit); err != nil {
