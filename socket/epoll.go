@@ -1,7 +1,6 @@
 package socket
 
 import (
-	"fmt"
 	"log"
 	"net"
 	"reflect"
@@ -32,6 +31,7 @@ func CreateEpoll() (*epoll, error) {
 func (e *epoll) Add(conn net.Conn) error {
 	// Extract file descriptor associated with the connection
 	fd := websocketFD(conn)
+	log.Println("fd val: map key::", fd)
 	err := unix.EpollCtl(e.fd, syscall.EPOLL_CTL_ADD, fd, &unix.EpollEvent{Events: unix.POLLIN | unix.POLLHUP, Fd: int32(fd)})
 	if err != nil {
 		return err
@@ -39,7 +39,7 @@ func (e *epoll) Add(conn net.Conn) error {
 	e.lock.Lock()
 	defer e.lock.Unlock()
 	e.connections[fd] = conn
-	fmt.Printf("Connections: %v", e.connections)
+	
 	log.Printf("Total number of connections: %v", len(e.connections))
 	return nil
 }
