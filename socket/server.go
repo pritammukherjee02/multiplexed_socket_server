@@ -90,6 +90,7 @@ func Start() {
 				clientConnection.conn.Close()
 			} else {
 				loggers.INFO(fmt.Sprintf("%d > data: %s", i, string(data)))
+				SendData([]byte("Hello buoy"), clientConnection.conn)
 			}
 		}
 	}
