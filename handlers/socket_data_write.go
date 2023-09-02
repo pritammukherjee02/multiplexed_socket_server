@@ -18,6 +18,7 @@ func (h *Handlers) sendData(data []byte, conn net.Conn) error {
 	return err
 }
 
+// Sends data to the client with the given ID
 func (h *Handlers) SocketWriteHandler(data []byte, id string) error {
 	conn := clients.GetConnectionForClient(id)
 	return h.sendData(data, conn)
