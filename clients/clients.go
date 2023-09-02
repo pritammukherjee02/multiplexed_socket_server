@@ -1,13 +1,17 @@
-package socket
+package clients
 
 import (
 	"net"
+
+	eventlogger "github.com/pritammukherjee02/multiplexed_socket_server/event_logger"
 )
 
 var Clients map[string]net.Conn
+var loggers *eventlogger.Loggers
 
-func ClientsMapInit(){
+func ClientsMapInit(logger *eventlogger.Loggers){
 	Clients = make(map[string]net.Conn)
+	loggers = logger
 }
 
 func AppendClient(id string, conn net.Conn){

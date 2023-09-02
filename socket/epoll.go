@@ -7,6 +7,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/pritammukherjee02/multiplexed_socket_server/clients"
 	"golang.org/x/sys/unix"
 )
 
@@ -28,7 +29,7 @@ func CreateEpoll() (*epoll, error) {
 	}
 
 	// Makes an empty map of client ids mapped to their connections
-	ClientsMapInit()
+	clients.ClientsMapInit(loggers)
 
 	return &epoll{
 		fd:          fd,
@@ -50,7 +51,7 @@ func (e *epoll) Add(id string, conn net.Conn) error {
 		id: id,
 		conn: conn,
 	}
-	AppendClient(id, conn)
+	clients.AppendClient(id, conn)
 	
 	loggers.DEBUG(fmt.Sprintf("Append: Total number of connections: %v", len(e.connections)))
 	return nil
@@ -66,7 +67,7 @@ func (e *epoll) Remove(conn net.Conn) error {
 	defer e.lock.Unlock()
 	id := e.connections[fd].id
 	delete(e.connections, fd)
-	RemoveClient(id)
+	clients.RemoveClient(id)
 
 	loggers.DEBUG(fmt.Sprintf("Remove: Total number of connections: %v", len(e.connections)))
 	return nil

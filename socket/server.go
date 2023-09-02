@@ -1,7 +1,6 @@
 package socket
 
 import (
-	"fmt"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -11,10 +10,12 @@ import (
 	"github.com/gobwas/ws/wsutil"
 	"github.com/google/uuid"
 	eventlogger "github.com/pritammukherjee02/multiplexed_socket_server/event_logger"
+	"github.com/pritammukherjee02/multiplexed_socket_server/handlers"
 )
 
 var epoller *epoll
 var loggers *eventlogger.Loggers
+var handler *handlers.Handlers
 
 func wsHandler(w http.ResponseWriter, r *http.Request) {
 	// Upgrade connection
@@ -34,6 +35,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 
 func RunSocketServer(loggers_instance *eventlogger.Loggers) {
 	loggers = loggers_instance
+	handler = handlers.NewHandlers(loggers)
 	loggers.INFO("Starting Gobwas socket server...")
 	loggers.DEBUG("Setting ulimit RLIMIT_NOFILE to rLimit.Max...")
 
@@ -91,11 +93,11 @@ func Start() {
 				}
 				clientConnection.conn.Close()
 			} else {
-				loggers.INFO(fmt.Sprintf("Received (id: %s): %s", clientConnection.id, string(data)))
-				 err = SendData([]byte("Hello from the server, client ID: " + clientConnection.id), clientConnection.conn)
-				 if err != nil {
+				handler.SocketReadHandler(data, clientConnection.id)
+				err = handler.SocketWriteHandler([]byte("Hello from the server, client ID: " + clientConnection.id), clientConnection.id)
+				if err != nil {
 					loggers.ERR(err.Error())
-				 }
+				}
 			}
 		}
 	}
