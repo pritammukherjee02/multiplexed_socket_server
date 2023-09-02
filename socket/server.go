@@ -53,7 +53,7 @@ func RunSocketServer(loggers_instance *eventlogger.Loggers) {
 	// Enable pprof hooks
 	go func() {
 		loggers.INFO("Starting pprof endpoint '/' at port: 6060")
-		if err := http.ListenAndServe("localhost:6060", nil); err != nil {
+		if err := http.ListenAndServe("0.0.0.0:6060", nil); err != nil {
 			loggers.ERR("pprof failed: " + err.Error())
 		}
 	}()
