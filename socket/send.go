@@ -10,7 +10,7 @@ func SendData(data []byte, conn net.Conn) error {
 	loggers.DEBUG("About to send data")
 	// _, err := conn.Write(data)
 	// err := wsutil.WriteClientText(conn, data)
-	err := wsutil.WriteClientBinary(conn, data)
+	err := wsutil.WriteServerBinary(conn, data)
 	if err != nil {
 		loggers.ERR("Encountered error while writing to the client connection: " + err.Error())
 	}
