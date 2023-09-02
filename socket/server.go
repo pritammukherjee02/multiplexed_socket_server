@@ -50,6 +50,7 @@ func RunSocketServer(loggers_instance *eventlogger.Loggers) {
 
 	// Enable pprof hooks
 	go func() {
+		loggers.INFO("Starting pprof endpoint '/' at port: 6060")
 		if err := http.ListenAndServe("localhost:6060", nil); err != nil {
 			loggers.ERR("pprof failed: " + err.Error())
 		}
@@ -64,6 +65,7 @@ func RunSocketServer(loggers_instance *eventlogger.Loggers) {
 
 	go Start()
 
+	loggers.INFO("Starting websocket endpoint '/' at port: 8000")
 	http.HandleFunc("/", wsHandler)
 	if err := http.ListenAndServe("0.0.0.0:8000", nil); err != nil {
 		loggers.ERR(err.Error())
@@ -79,7 +81,7 @@ func Start() {
 			loggers.ERR("Failed to wait epoll: " + err.Error())
 			continue
 		}
-		for i, clientConnection := range clientConnections {
+		for _, clientConnection := range clientConnections {
 			if clientConnection.conn == nil {
 				break
 			}
@@ -89,8 +91,8 @@ func Start() {
 				}
 				clientConnection.conn.Close()
 			} else {
-				loggers.INFO(fmt.Sprintf("%d > data: %s", i, string(data)))
-				 err = SendData([]byte("Hello buoy"), clientConnection.conn)
+				loggers.INFO(fmt.Sprintf("Received (id: %s): %s", clientConnection.id, string(data)))
+				 err = SendData([]byte("Hello from the server, client ID: " + clientConnection.id), clientConnection.conn)
 				 if err != nil {
 					loggers.ERR(err.Error())
 				 }

@@ -3,17 +3,16 @@ package socket
 import (
 	"net"
 
+	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 )
 
 func SendData(data []byte, conn net.Conn) error {
-	loggers.DEBUG("About to send data")
-	// _, err := conn.Write(data)
-	// err := wsutil.WriteClientText(conn, data)
-	err := wsutil.WriteServerBinary(conn, data)
+	err := wsutil.WriteServerMessage(conn, ws.OpText, data)
 	if err != nil {
 		loggers.ERR("Encountered error while writing to the client connection: " + err.Error())
+		return err
 	}
-	loggers.DEBUG("Sent")
+	loggers.DEBUG("Sent data: " + string(data))
 	return err
 }
